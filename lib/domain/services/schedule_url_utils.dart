@@ -54,4 +54,41 @@ abstract final class ScheduleUrlUtils {
     }
     return path;
   }
+
+  /// Сравнение «тот же HTTP(S)-ресурс» без учёта фрагмента (`#session` и т.д.).
+  static bool sameHttpDocumentIgnoringFragment(String a, String b) {
+    final ua = Uri.tryParse(a);
+    final ub = Uri.tryParse(b);
+    if (ua == null || ub == null) {
+      return a == b;
+    }
+    if (ua.scheme.toLowerCase() != ub.scheme.toLowerCase()) {
+      return false;
+    }
+    if (ua.host.toLowerCase() != ub.host.toLowerCase()) {
+      return false;
+    }
+    if (ua.hasPort != ub.hasPort) {
+      return false;
+    }
+    if (ua.hasPort && ua.port != ub.port) {
+      return false;
+    }
+    if (_normalizedPathForCompare(ua.path) !=
+        _normalizedPathForCompare(ub.path)) {
+      return false;
+    }
+    return ua.query == ub.query;
+  }
+
+  static String _normalizedPathForCompare(String path) {
+    var p = path;
+    if (!p.startsWith('/')) {
+      p = '/$p';
+    }
+    if (p.length > 1 && p.endsWith('/')) {
+      p = p.substring(0, p.length - 1);
+    }
+    return p;
+  }
 }

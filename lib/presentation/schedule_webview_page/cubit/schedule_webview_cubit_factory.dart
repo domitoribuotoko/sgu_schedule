@@ -1,6 +1,6 @@
 import 'package:sgu_schedule/core/di/di_interface.dart';
 import 'package:sgu_schedule/presentation/_base/services/app_link_laucher_service.dart';
-import 'package:sgu_schedule/presentation/schedule_webview/cubit/schedule_webview_cubit.dart';
+import 'package:sgu_schedule/presentation/schedule_webview_page/cubit/schedule_webview_cubit.dart';
 
 abstract interface class ScheduleWebviewCubitFactory {
   ScheduleWebviewCubit create();

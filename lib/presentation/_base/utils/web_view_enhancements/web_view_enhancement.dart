@@ -2,12 +2,12 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 /// Настройка/доработка загружаемой страницы WebView без протекания деталей
 /// конкретного экрана в [InAppWebView].
-abstract class WebViewPageEnhancement {
-  const WebViewPageEnhancement();
+abstract class WebViewEnhancement {
+  const WebViewEnhancement();
 
-  /// Скрипты до первой загрузки (можно пусто).
+  /// Ранний инжект (например [UserScriptInjectionTime.AT_DOCUMENT_START]), до отрисовки.
   List<UserScript> get initialScripts => const [];
 
-  /// Выполнить после [InAppWebView.onLoadStop] (ошибки обрабатывает вызывающий).
+  /// Повтор после загрузки: SPA, смена DOM, случаи без поддержки document-start на WebView.
   Future<void> onLoadStop(InAppWebViewController controller, WebUri? url);
 }

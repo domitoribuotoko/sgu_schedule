@@ -22,6 +22,7 @@ final class SchedulePathRepositoryImpl implements SchedulePathRepository {
     return v.startsWith('/') ? v : '/$v';
   }
 
+  /// [path] может включать фрагмент, напр. `/schedule/.../421#session`.
   @override
   Future<void> savePath(String path) {
     final normalized = path.startsWith('/') ? path : '/$path';

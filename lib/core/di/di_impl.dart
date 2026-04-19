@@ -5,7 +5,7 @@ import 'package:sgu_schedule/core/di/di_interface.dart';
 import 'package:sgu_schedule/data/local/schedule_path_repository_impl.dart';
 import 'package:sgu_schedule/domain/_base/di_getters.dart';
 import 'package:sgu_schedule/domain/repositories/schedule_path_repository.dart';
-import 'package:sgu_schedule/presentation/schedule_webview/cubit/schedule_webview_cubit_factory.dart';
+import 'package:sgu_schedule/presentation/schedule_webview_page/cubit/schedule_webview_cubit_factory.dart';
 
 class DIImplementation implements DIContainer {
   DIImplementation() : _getIt = GetIt.asNewInstance();

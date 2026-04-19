@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sgu_schedule/presentation/_base/extensions/presentation_di_extension.dart';
-import 'package:sgu_schedule/presentation/schedule_webview/widget/schedule_webview_widget.dart';
+import 'package:sgu_schedule/presentation/schedule_webview_page/widget/schedule_webview_widget.dart';
 
 class ScheduleWebviewPage extends StatelessWidget {
   const ScheduleWebviewPage({super.key});

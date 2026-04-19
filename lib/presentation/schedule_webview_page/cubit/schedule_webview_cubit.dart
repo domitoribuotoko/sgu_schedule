@@ -8,7 +8,7 @@ import 'package:sgu_schedule/domain/use_cases/schedule/save_schedule_path_use_ca
 import 'package:sgu_schedule/presentation/_base/enums/webview_command_enum.dart';
 import 'package:sgu_schedule/presentation/_base/mixins/cubit_extensions_mixin.dart';
 import 'package:sgu_schedule/presentation/_base/services/app_link_laucher_service.dart';
-import 'package:sgu_schedule/presentation/schedule_webview/cubit/schedule_webview_state.dart';
+import 'package:sgu_schedule/presentation/schedule_webview_page/cubit/schedule_webview_state.dart';
 
 class ScheduleWebviewCubit extends Cubit<ScheduleWebviewState>
     with CubitExtensions<ScheduleWebviewState> {
@@ -62,6 +62,7 @@ class ScheduleWebviewCubit extends Cubit<ScheduleWebviewState>
   }
 
   Future<bool> shouldOverrideUrlLoading(String? url) async {
+    trace('oveerrid url $url');
     if (url == null || url.startsWith('about:')) {
       return true;
     }
@@ -78,13 +79,19 @@ class ScheduleWebviewCubit extends Cubit<ScheduleWebviewState>
     }
     final path = ScheduleUrlUtils.normalizedSchedulePath(url);
     if (path != null) {
-      final res = await _saveSchedulePath.call(SaveSchedulePathInput(path));
+      final fragment = uri.fragment;
+      final res = await _saveSchedulePath.call(
+        SaveSchedulePathInput(path, fragment: fragment),
+      );
       res.fold((_) {}, (_) {
+        final savedUrl = fragment.isEmpty
+            ? '${SguScheduleConstants.origin}$path'
+            : '${SguScheduleConstants.origin}$path#$fragment';
         maybeEmit(
           state.copyWith(
             webViewUrl: url,
             hasSavedGroupSchedule: true,
-            savedScheduleWebUrl: '${SguScheduleConstants.origin}$path',
+            savedScheduleWebUrl: savedUrl,
           ),
         );
       });
@@ -97,7 +104,9 @@ class ScheduleWebviewCubit extends Cubit<ScheduleWebviewState>
   }
 
   void onWebviewPopNotAvailable() {
+    trace('cant back');
     if (state.webViewUrl == SguScheduleConstants.scheduleIndexUrl) {
+      trace('dont reload'.red);
       return;
     }
     maybeEmit(
@@ -121,11 +130,11 @@ class ScheduleWebviewCubit extends Cubit<ScheduleWebviewState>
     }
   }
 
-  void onLoadStop(InAppWebViewController _, Uri? uri) {
-    if (uri == null) {
-      return;
-    }
-    maybeEmit(state.copyWith(webViewUrl: uri.toString()));
+  void onLoadStop(InAppWebViewController? _, Uri? uri) {
+    // if (uri == null) {
+    //   return;
+    // }
+    // maybeEmit(state.copyWith(webViewUrl: uri.toString()));
   }
 
   void onResetWebViewEnd() {
@@ -151,13 +160,16 @@ class ScheduleWebviewCubit extends Cubit<ScheduleWebviewState>
     if (!state.hasSavedGroupSchedule || state.savedScheduleWebUrl.isEmpty) {
       return;
     }
-    if (state.webViewUrl == state.savedScheduleWebUrl) {
+    if (ScheduleUrlUtils.sameHttpDocumentIgnoringFragment(
+          state.webViewUrl,
+          state.savedScheduleWebUrl,
+        )) {
       return;
     }
     maybeEmit(
       state.copyWith(
         webViewUrl: state.savedScheduleWebUrl,
-        resetWebView: true,
+        // resetWebView: true,
         isLoading: true,
       ),
     );

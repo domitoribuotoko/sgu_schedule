@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:sgu_schedule/core/utils/trace_print.dart';
+import 'package:sgu_schedule/domain/services/schedule_url_utils.dart';
 import 'package:sgu_schedule/presentation/_base/widgets/base_web_view_widget.dart';
-import 'package:sgu_schedule/presentation/schedule_webview/webview/sgu_site_footer_hide_enhancement.dart';
-import 'package:sgu_schedule/presentation/schedule_webview/webview/sgu_site_header_hide_enhancement.dart';
+import 'package:sgu_schedule/presentation/_base/utils/web_view_enhancements/sgu_site_enc/sgu_site_header_hide_enhancement.dart';
 import 'package:sgu_schedule/presentation/_base/widgets/bloc_wrappers/bloc_multi_selector.dart';
-import 'package:sgu_schedule/presentation/schedule_webview/cubit/schedule_webview_cubit.dart';
-import 'package:sgu_schedule/presentation/schedule_webview/cubit/schedule_webview_state.dart';
+import 'package:sgu_schedule/presentation/schedule_webview_page/cubit/schedule_webview_cubit.dart';
+import 'package:sgu_schedule/presentation/schedule_webview_page/cubit/schedule_webview_state.dart';
+
+import '../../_base/utils/web_view_enhancements/sgu_site_enc/sgu_site_footer_hide_enhancement.dart';
 
 class ScheduleWebviewWidget extends StatelessWidget {
   const ScheduleWebviewWidget({super.key});
@@ -30,6 +32,7 @@ class ScheduleWebviewWidget extends StatelessWidget {
             s.hasSavedGroupSchedule,
           ],
           cubitBuilder: (context, cubit, state) {
+            trace('webview build url init ${state.webViewUrl}');
             return PopScope(
               canPop: false,
               onPopInvokedWithResult: (didPop, _) {
@@ -50,6 +53,11 @@ class ScheduleWebviewWidget extends StatelessWidget {
                   children: [
                     BaseWebViewWidget(
                       initRequest: URLRequest(url: WebUri(state.webViewUrl)),
+                      shouldReloadAfterInitUrlChange: (oldUrl, newUrl) =>
+                          !ScheduleUrlUtils.sameHttpDocumentIgnoringFragment(
+                            oldUrl,
+                            newUrl,
+                          ),
                       enhancements: const [
                         SguSiteHeaderHideEnhancement(),
                         SguSiteFooterHideEnhancement(),
@@ -62,7 +70,7 @@ class ScheduleWebviewWidget extends StatelessWidget {
                       commandRequest: state.webviewCommand,
                       onPopNotAvailable: cubit.onWebviewPopNotAvailable,
                       onCommandHandled: cubit.onWebViewCommandHandled,
-                      onLoadStop: cubit.onLoadStop,
+                      // onLoadStop: cubit.onLoadStop,
                     ),
                     if (state.isLoading)
                       const ColoredBox(

@@ -3,7 +3,7 @@ import 'package:sgu_schedule/domain/repositories/schedule_path_repository.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule/clear_saved_schedule_path_use_case.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule/get_initial_schedule_web_url_use_case.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule/save_schedule_path_use_case.dart';
-import 'package:sgu_schedule/presentation/schedule_webview/cubit/schedule_webview_cubit_factory.dart';
+import 'package:sgu_schedule/presentation/schedule_webview_page/cubit/schedule_webview_cubit_factory.dart';
 
 class Factories {
   Factories(this._di);
