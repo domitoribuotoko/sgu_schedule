@@ -131,10 +131,10 @@ class ScheduleWebviewCubit extends Cubit<ScheduleWebviewState>
   }
 
   void onLoadStop(InAppWebViewController? _, Uri? uri) {
-    // if (uri == null) {
-    //   return;
-    // }
-    // maybeEmit(state.copyWith(webViewUrl: uri.toString()));
+    if (uri == null) {
+      return;
+    }
+    maybeEmit(state.copyWith(webViewUrl: uri.toString()));
   }
 
   void onResetWebViewEnd() {

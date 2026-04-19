@@ -70,7 +70,7 @@ class ScheduleWebviewWidget extends StatelessWidget {
                       commandRequest: state.webviewCommand,
                       onPopNotAvailable: cubit.onWebviewPopNotAvailable,
                       onCommandHandled: cubit.onWebViewCommandHandled,
-                      // onLoadStop: cubit.onLoadStop,
+                      onLoadStop: cubit.onLoadStop,
                     ),
                     if (state.isLoading)
                       const ColoredBox(
