@@ -1,4 +1,4 @@
-enum AppFailureKind { storage, unknown }
+enum AppFailureKind { storage, network, unknown }
 
 final class AppFailure {
   const AppFailure({required this.message, this.kind = AppFailureKind.unknown});

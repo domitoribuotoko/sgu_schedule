@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:sgu_schedule/core/sgu_schedule_constants.dart';
-import 'package:sgu_schedule/core/utils/trace_print.dart';
 import 'package:sgu_schedule/domain/services/schedule_url_utils.dart';
 import 'package:sgu_schedule/presentation/_base/enums/webview_command_enum.dart';
 

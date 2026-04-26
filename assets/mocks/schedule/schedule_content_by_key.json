@@ -1,0 +1,113 @@
+{
+  "_comment": "Ключ: \"<path>|<view>\" — path из query (с ведущим /), view: all | lection | session. Нет ключа — __default.",
+  "__default": {
+    "view": "all",
+    "sourcePath": "/schedule/bf/do/121",
+    "weeks": [
+      {
+        "title": "Неделя (мок __default)",
+        "days": [
+          {
+            "dateLabel": "пн",
+            "slots": [
+              {
+                "time": "09:00",
+                "title": "Общий fallback: укажите path+view в asset",
+                "room": "—"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "/schedule/bf/oo/101|all": {
+    "view": "all",
+    "sourcePath": "/schedule/bf/oo/101",
+    "weeks": [
+      {
+        "title": "30 сент. – 4 окт. 2019",
+        "days": [
+          {
+            "dateLabel": "вт, 1 сен",
+            "slots": [
+              {
+                "time": "08:00",
+                "title": "Мат. анализ (мок all)",
+                "room": "1-2-19"
+              },
+              {
+                "time": "10:15",
+                "title": "Программирование",
+                "room": "3-4-12"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "/schedule/bf/oo/101|lection": {
+    "view": "lection",
+    "sourcePath": "/schedule/bf/oo/101",
+    "weeks": [
+      {
+        "title": "Лекционный семестр (мок)",
+        "days": [
+          {
+            "dateLabel": "вт, 1 сен",
+            "slots": [
+              {
+                "time": "08:00",
+                "title": "Лекция: Мат. анализ",
+                "room": "1-2-19"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "/schedule/bf/oo/101|session": {
+    "view": "session",
+    "sourcePath": "/schedule/bf/oo/101",
+    "weeks": [
+      {
+        "title": "Зачётная сессия (мок)",
+        "days": [
+          {
+            "dateLabel": "ср, 15 янв",
+            "slots": [
+              {
+                "time": "10:00",
+                "title": "Зачёт по мат. анализу",
+                "room": "5-1-01"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "/schedule/bf/oo/421|all": {
+    "view": "all",
+    "sourcePath": "/schedule/bf/oo/421",
+    "weeks": [
+      {
+        "title": "Неделя учебная",
+        "days": [
+          {
+            "dateLabel": "ср, 3 сен",
+            "slots": [
+              {
+                "time": "12:00",
+                "title": "Группа 421 — тестовый мок",
+                "room": "2-3-44"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

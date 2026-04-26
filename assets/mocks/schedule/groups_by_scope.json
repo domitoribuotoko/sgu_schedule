@@ -1,0 +1,59 @@
+{
+  "_comment": "Ключ: facultyId|formId. schedulePath в стиле публичного URL расписания СГУ (путь без домена, как на сайте).",
+  "__default": {
+    "items": [
+      {
+        "id": "g501",
+        "name": "101",
+        "schedulePath": "/schedule/bf/oo/101"
+      },
+      {
+        "id": "g502",
+        "name": "102",
+        "schedulePath": "/schedule/bf/oo/102"
+      }
+    ]
+  },
+  "4311|1": {
+    "items": [
+      {
+        "id": "g42110",
+        "name": "421",
+        "schedulePath": "/schedule/bf/oo/421"
+      },
+      {
+        "id": "g42111",
+        "name": "422",
+        "schedulePath": "/schedule/bf/oo/422"
+      },
+      {
+        "id": "g42112",
+        "name": "б422",
+        "schedulePath": "/schedule/bf/oo/b422"
+      }
+    ]
+  },
+  "4311|2": {
+    "items": [
+      {
+        "id": "g201",
+        "name": "201 (оз)",
+        "schedulePath": "/schedule/bf/oz/201"
+      }
+    ]
+  },
+  "1017|1": {
+    "items": [
+      {
+        "id": "c101",
+        "name": "КН-201",
+        "schedulePath": "/schedule/fcsit/oo/101"
+      },
+      {
+        "id": "c102",
+        "name": "ПИ-301",
+        "schedulePath": "/schedule/fcsit/oo/301"
+      }
+    ]
+  }
+}

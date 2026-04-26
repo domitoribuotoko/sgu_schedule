@@ -7,4 +7,6 @@ extension PresentationDiX on BuildContext {
   DiPresentationScope get presentationDi => read<DiPresentationScope>();
 
   Factories get factories => presentationDi.factories;
+
+  UseCases get useCases => presentationDi.useCases;
 }
