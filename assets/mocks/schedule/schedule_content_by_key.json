@@ -5,17 +5,43 @@
     "sourcePath": "/schedule/bf/do/121",
     "weeks": [
       {
-        "title": "Неделя (мок __default)",
+        "title": "Неделя (мок __default): дни — как колонки таблицы sgu",
         "days": [
           {
-            "dateLabel": "пн",
+            "dateLabel": "Понедельник",
             "slots": [
               {
-                "time": "09:00",
+                "time": "08:20 09:50",
                 "title": "Общий fallback: укажите path+view в asset",
                 "room": "—"
               }
             ]
+          },
+          {
+            "dateLabel": "Вторник",
+            "slots": []
+          },
+          {
+            "dateLabel": "Среда",
+            "slots": [
+              {
+                "time": "10:00",
+                "title": "Пример пары (мок)",
+                "room": "1-1-01"
+              }
+            ]
+          },
+          {
+            "dateLabel": "Четверг",
+            "slots": []
+          },
+          {
+            "dateLabel": "Пятница",
+            "slots": []
+          },
+          {
+            "dateLabel": "Суббота",
+            "slots": []
           }
         ]
       }
@@ -29,19 +55,40 @@
         "title": "30 сент. – 4 окт. 2019",
         "days": [
           {
-            "dateLabel": "вт, 1 сен",
+            "dateLabel": "Понедельник",
+            "slots": [
+              {
+                "time": "10:00",
+                "title": "Мат. анализ (мок all)",
+                "room": "1-2-19"
+              }
+            ]
+          },
+          {
+            "dateLabel": "Вторник",
             "slots": [
               {
                 "time": "08:00",
-                "title": "Мат. анализ (мок all)",
-                "room": "1-2-19"
-              },
-              {
-                "time": "10:15",
                 "title": "Программирование",
                 "room": "3-4-12"
               }
             ]
+          },
+          {
+            "dateLabel": "Среда",
+            "slots": []
+          },
+          {
+            "dateLabel": "Четверг",
+            "slots": []
+          },
+          {
+            "dateLabel": "Пятница",
+            "slots": []
+          },
+          {
+            "dateLabel": "Суббота",
+            "slots": []
           }
         ]
       }
@@ -55,7 +102,7 @@
         "title": "Лекционный семестр (мок)",
         "days": [
           {
-            "dateLabel": "вт, 1 сен",
+            "dateLabel": "Понедельник",
             "slots": [
               {
                 "time": "08:00",
@@ -63,6 +110,26 @@
                 "room": "1-2-19"
               }
             ]
+          },
+          {
+            "dateLabel": "Вторник",
+            "slots": []
+          },
+          {
+            "dateLabel": "Среда",
+            "slots": []
+          },
+          {
+            "dateLabel": "Четверг",
+            "slots": []
+          },
+          {
+            "dateLabel": "Пятница",
+            "slots": []
+          },
+          {
+            "dateLabel": "Суббота",
+            "slots": []
           }
         ]
       }
@@ -76,7 +143,15 @@
         "title": "Зачётная сессия (мок)",
         "days": [
           {
-            "dateLabel": "ср, 15 янв",
+            "dateLabel": "Понедельник",
+            "slots": []
+          },
+          {
+            "dateLabel": "Вторник",
+            "slots": []
+          },
+          {
+            "dateLabel": "Среда",
             "slots": [
               {
                 "time": "10:00",
@@ -84,6 +159,18 @@
                 "room": "5-1-01"
               }
             ]
+          },
+          {
+            "dateLabel": "Четверг",
+            "slots": []
+          },
+          {
+            "dateLabel": "Пятница",
+            "slots": []
+          },
+          {
+            "dateLabel": "Суббота",
+            "slots": []
           }
         ]
       }
@@ -97,7 +184,15 @@
         "title": "Неделя учебная",
         "days": [
           {
-            "dateLabel": "ср, 3 сен",
+            "dateLabel": "Понедельник",
+            "slots": []
+          },
+          {
+            "dateLabel": "Вторник",
+            "slots": []
+          },
+          {
+            "dateLabel": "Среда",
             "slots": [
               {
                 "time": "12:00",
@@ -105,6 +200,18 @@
                 "room": "2-3-44"
               }
             ]
+          },
+          {
+            "dateLabel": "Четверг",
+            "slots": []
+          },
+          {
+            "dateLabel": "Пятница",
+            "slots": []
+          },
+          {
+            "dateLabel": "Суббота",
+            "slots": []
           }
         ]
       }

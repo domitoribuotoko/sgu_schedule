@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Если корень — папка с index.php, скрытие /index.php в URL.
+  # Запросы, не существующие как файлы/папки, — в index.php
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.php [L]
+</IfModule>
+
+# Для Beget/Apache: кастомные MIME (Flutter Web, wasm) при необходимости.
+<IfModule mod_mime.c>
+  AddType application/wasm wasm
+</IfModule>

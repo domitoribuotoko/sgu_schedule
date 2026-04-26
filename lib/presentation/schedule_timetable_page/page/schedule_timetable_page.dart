@@ -106,27 +106,62 @@ class _TimetableBody extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
-          for (final d in w.days) ...[
-            if (d.dateLabel.isNotEmpty)
-              Text(
-                d.dateLabel,
-                style: Theme.of(context).textTheme.titleSmall,
+          for (var di = 0; di < w.days.length; di++) ...[
+            if (w.days[di].dateLabel.isNotEmpty)
+              _DayExpansionTile(
+                day: w.days[di],
+                initiallyExpanded: _firstIndexWithSlots(w.days) == di,
               ),
-            for (final slot in d.slots)
-              ListTile(
-                dense: true,
-                title: Text(slot.title),
-                subtitle: Text(
-                  [
-                    if (slot.time.isNotEmpty) slot.time,
-                    if (slot.room.isNotEmpty) slot.room,
-                  ].join(' · '),
-                ),
-              ),
-            const SizedBox(height: 8),
           ],
         ],
       ],
+    );
+  }
+}
+
+int _firstIndexWithSlots(List<ScheduleDay> days) {
+  for (var i = 0; i < days.length; i++) {
+    if (days[i].slots.isNotEmpty) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+class _DayExpansionTile extends StatelessWidget {
+  const _DayExpansionTile({
+    required this.day,
+    required this.initiallyExpanded,
+  });
+
+  final ScheduleDay day;
+  final bool initiallyExpanded;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: ExpansionTile(
+        key: PageStorageKey('day_${day.dateLabel}'),
+        initiallyExpanded: initiallyExpanded,
+        title: Text(day.dateLabel),
+        subtitle: day.slots.isEmpty
+            ? const Text('Нет пар', style: TextStyle(fontSize: 13))
+            : null,
+        children: [
+          for (final slot in day.slots)
+            ListTile(
+              dense: true,
+              title: Text(slot.title),
+              subtitle: Text(
+                [
+                  if (slot.time.isNotEmpty) slot.time,
+                  if (slot.room.isNotEmpty) slot.room,
+                ].join(' · '),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
