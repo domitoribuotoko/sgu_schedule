@@ -31,6 +31,27 @@
 
   <title>sgu_schedule</title>
   <link rel="manifest" href="manifest.json">
+  <script>
+    (function () {
+      try {
+        var l = window.location;
+        if (!l.hash || l.hash.indexOf("tgWebAppData=") < 0) {
+          return;
+        }
+        var inner = l.hash.charAt(0) === "#" ? l.hash.slice(1) : l.hash;
+        if (inner.indexOf("tgWebAppData=") < 0 || inner.charAt(0) === "/") {
+          return;
+        }
+        var path = l.pathname && l.pathname.length ? l.pathname : "/";
+        var joined = l.search
+          ? l.search + "&" + inner
+          : "?" + inner;
+        l.replace(
+          l.protocol + "//" + l.host + path + joined
+        );
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

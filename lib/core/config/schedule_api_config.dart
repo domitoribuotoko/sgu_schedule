@@ -1,21 +1,38 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 
-/// Базовый URL JSON API. Задаётся при сборке: `--dart-define=API_BASE_URL=...`
-/// (пример: `https://ваш-домен.ru/sgu_api` для выкладки в подпапку).
-/// [defaultValue] — прежний dev-адрес, если define не задан. Для Web в проде
-/// укажите полный `https://…` к этому API (тот же origin, что и фронт, либо
-/// другой — тогда CORS на сервере).
+/// Базовый URL JSON API.
 ///
-/// [Замечание] Flutter Web (в т.ч. Telegram Mini App) проверяет CORS. Сервер
-/// обязан отвечать `Access-Control-Allow-Origin` для origin клиента, иначе
-/// `Dio` выдаст сетевую ошибку (браузер обрежет ответ).
+/// **Web:** если `API_BASE_URL` не задан — берётся тот же origin, что у страницы
+/// (любой домен), путь `/sgu_api`, т.е. бэк на том же хостинге рядом с фронтом.
 ///
-/// Для прод-размещения Mini App обычно нужен **HTTPS**; HTTP удобен для dev.
+/// Явный URL: `--dart-define=API_BASE_URL=https://…/sgu_api` (другой бэк, отладка).
+/// [defaultValue] для не‑web, если define пустой — прежний dev‑адрес.
+///
+/// CORS, HTTPS, Mini App — см. комментарии в истории; при same-origin CORS к своему API не нужен.
 abstract final class ScheduleApiConfig {
-  static const String baseUrl = String.fromEnvironment(
+  static const String _apiBaseFromEnv = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://188.253.17.93:9086',
+    defaultValue: '',
   );
+
+  static String get baseUrl {
+    final env = _apiBaseFromEnv.trim();
+    if (env.isNotEmpty) {
+      return env;
+    }
+    if (kIsWeb) {
+      return _sameHostSguApi();
+    }
+    return 'http://188.253.17.93:9086';
+  }
+
+  static String _sameHostSguApi() {
+    final u = Uri.base;
+    if ((u.isScheme('http') || u.isScheme('https')) && u.host.isNotEmpty) {
+      return '${u.origin}/sgu_api';
+    }
+    return 'http://188.253.17.93:9086';
+  }
 
   /// Ответы API подменяются моками из [assets/mocks/schedule/] (Dio-интерцептор).
   /// Явно: `--dart-define=SCHEDULE_API_MOCK=true` или `=false`. Если define не
