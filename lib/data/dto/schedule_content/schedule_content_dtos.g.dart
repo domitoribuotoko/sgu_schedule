@@ -32,6 +32,30 @@ ScheduleWeekBlockDto _$ScheduleWeekBlockDtoFromJson(
       const <ScheduleDayDto>[],
 );
 
+SessionScheduleItemDto _$SessionScheduleItemDtoFromJson(
+  Map<String, dynamic> json,
+) => SessionScheduleItemDto(
+  dateTime: json['dateTime'] as String? ?? '',
+  form: json['form'] as String? ?? '',
+  discipline: json['discipline'] as String? ?? '',
+  teacher: json['teacher'] as String? ?? '',
+  place: json['place'] as String? ?? '',
+);
+
+SessionScheduleDto _$SessionScheduleDtoFromJson(Map<String, dynamic> json) =>
+    SessionScheduleDto(
+      title: json['title'] as String? ?? '',
+      updatedAt: json['updatedAt'] as String? ?? '',
+      items:
+          (json['items'] as List<dynamic>?)
+              ?.map(
+                (e) =>
+                    SessionScheduleItemDto.fromJson(e as Map<String, dynamic>),
+              )
+              .toList() ??
+          const <SessionScheduleItemDto>[],
+    );
+
 ScheduleContentResponseDto _$ScheduleContentResponseDtoFromJson(
   Map<String, dynamic> json,
 ) => ScheduleContentResponseDto(
@@ -42,4 +66,7 @@ ScheduleContentResponseDto _$ScheduleContentResponseDtoFromJson(
           ?.map((e) => ScheduleWeekBlockDto.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const <ScheduleWeekBlockDto>[],
+  session: json['session'] == null
+      ? const SessionScheduleDto()
+      : SessionScheduleDto.fromJson(json['session'] as Map<String, dynamic>),
 );

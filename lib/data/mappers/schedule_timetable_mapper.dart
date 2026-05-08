@@ -29,6 +29,21 @@ abstract final class ScheduleTimetableMapper {
             ),
           )
           .toList(),
+      session: SessionSchedule(
+        title: d.session.title,
+        updatedAt: d.session.updatedAt,
+        items: d.session.items
+            .map(
+              (it) => SessionScheduleItem(
+                dateTime: it.dateTime,
+                form: it.form,
+                discipline: it.discipline,
+                teacher: it.teacher,
+                place: it.place,
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 
@@ -59,6 +74,21 @@ abstract final class ScheduleTimetableMapper {
             },
           )
           .toList(),
+      'session': {
+        'title': t.session.title,
+        'updatedAt': t.session.updatedAt,
+        'items': t.session.items
+            .map(
+              (it) => {
+                'dateTime': it.dateTime,
+                'form': it.form,
+                'discipline': it.discipline,
+                'teacher': it.teacher,
+                'place': it.place,
+              },
+            )
+            .toList(),
+      },
     };
   }
 }

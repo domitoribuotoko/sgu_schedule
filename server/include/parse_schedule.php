@@ -8,7 +8,22 @@ declare(strict_types=1);
 final class ParseSchedule
 {
     /**
-     * @return array{view: string, sourcePath: string, weeks: list<array{title: string, days: list<array{dateLabel: string, slots: list<array{time: string, title: string, room: string}>}>}>}
+     * @return array{
+     *   view: string,
+     *   sourcePath: string,
+     *   weeks: list<array{title: string, days: list<array{dateLabel: string, slots: list<array{time: string, title: string, room: string}>}>}>,
+     *   session: array{
+     *     title: string,
+     *     updatedAt: string,
+     *     items: list<array{
+     *       dateTime: string,
+     *       form: string,
+     *       discipline: string,
+     *       teacher: string,
+     *       place: string
+     *     }>
+     *   }
+     * }
      */
     public static function content(string $html, string $path, string $view): array
     {
@@ -23,6 +38,7 @@ final class ParseSchedule
         $doc = new DOMDocument();
         @$doc->loadHTML($enc . $html, LIBXML_NOERROR | LIBXML_NOWARNING);
         $xp = new DOMXPath($doc);
+        $sessionData = self::parseSession($xp);
 
         $weekTitle = 'Расписание';
         $h = $xp->query("//h1[contains(@class,'title')] | //h1 | //h2[1]");
@@ -35,17 +51,23 @@ final class ParseSchedule
 
         $table = $xp->query("//table[@id='schedule' or contains(concat(' ', normalize-space(@class), ' '), ' schedule-table__wrapper ')]");
         if ($table === false || $table->length === 0) {
-            return self::emptyPayload($path, $view);
+            $payload = self::emptyPayload($path, $view);
+            $payload['session'] = $sessionData;
+            return $payload;
         }
         /** @var DOMElement $tableEl */
         $tableEl = $table->item(0);
         if (!($tableEl instanceof DOMElement)) {
-            return self::emptyPayload($path, $view);
+            $payload = self::emptyPayload($path, $view);
+            $payload['session'] = $sessionData;
+            return $payload;
         }
 
         $dayLabels = self::readDayHeaders($xp, $tableEl);
         if ($dayLabels === []) {
-            return self::emptyPayload($path, $view);
+            $payload = self::emptyPayload($path, $view);
+            $payload['session'] = $sessionData;
+            return $payload;
         }
 
         $n = count($dayLabels);
@@ -54,7 +76,9 @@ final class ParseSchedule
 
         $rows = $xp->query('.//tbody/tr', $tableEl);
         if ($rows === false) {
-            return self::emptyPayload($path, $view);
+            $payload = self::emptyPayload($path, $view);
+            $payload['session'] = $sessionData;
+            return $payload;
         }
 
         for ($r = 0; $r < $rows->length; $r++) {
@@ -112,7 +136,9 @@ final class ParseSchedule
             $total += count($slots);
         }
         if ($total === 0) {
-            return self::emptyPayload($path, $view);
+            $payload = self::emptyPayload($path, $view);
+            $payload['session'] = $sessionData;
+            return $payload;
         }
 
         $days = [];
@@ -132,7 +158,94 @@ final class ParseSchedule
                     'days' => $days,
                 ],
             ],
+            'session' => $sessionData,
         ];
+    }
+
+    /**
+     * @return array{
+     *   title: string,
+     *   updatedAt: string,
+     *   items: list<array{dateTime: string, form: string, discipline: string, teacher: string, place: string}>
+     * }
+     */
+    private static function parseSession(DOMXPath $xp): array
+    {
+        $title = '';
+        $updatedAt = '';
+        /** @var list<array{dateTime: string, form: string, discipline: string, teacher: string, place: string}> $items */
+        $items = [];
+
+        $wrapNodes = $xp->query("//div[contains(concat(' ', normalize-space(@class), ' '), ' schedule__wrap-session ')]");
+        if ($wrapNodes === false || $wrapNodes->length === 0) {
+            return ['title' => $title, 'updatedAt' => $updatedAt, 'items' => $items];
+        }
+
+        /** @var DOMElement $wrap */
+        $wrap = $wrapNodes->item(0);
+        if (!($wrap instanceof DOMElement)) {
+            return ['title' => $title, 'updatedAt' => $updatedAt, 'items' => $items];
+        }
+
+        $title = self::firstTextOfRel(
+            $xp,
+            $wrap,
+            ".//*[contains(concat(' ', normalize-space(@class), ' '), ' title__wrap_info ')]"
+        );
+        $updatedAt = self::firstTextOfRel(
+            $xp,
+            $wrap,
+            ".//*[contains(concat(' ', normalize-space(@class), ' '), ' title__wrap_description ')]"
+        );
+
+        $rows = $xp->query('.//table//tbody/tr', $wrap);
+        if ($rows === false) {
+            return ['title' => $title, 'updatedAt' => $updatedAt, 'items' => $items];
+        }
+
+        for ($i = 0; $i < $rows->length; $i++) {
+            $row = $rows->item($i);
+            if (!($row instanceof DOMElement)) {
+                continue;
+            }
+            $cells = $xp->query('./td', $row);
+            if ($cells === false || $cells->length < 4) {
+                continue;
+            }
+            $dateTime = self::normalizeText((string) $cells->item(0)?->textContent);
+            $metaCell = $cells->item(1);
+            $form = '';
+            $discipline = '';
+            if ($metaCell instanceof DOMElement) {
+                $form = self::firstTextOfRel(
+                    $xp,
+                    $metaCell,
+                    ".//*[contains(concat(' ', normalize-space(@class), ' '), ' schedule-form ')]"
+                );
+                $discipline = self::firstTextOfRel(
+                    $xp,
+                    $metaCell,
+                    ".//*[contains(concat(' ', normalize-space(@class), ' '), ' schedule-discipline ')]"
+                );
+                if ($discipline === '') {
+                    $discipline = self::normalizeText((string) $metaCell->textContent);
+                }
+            }
+            $teacher = self::normalizeText((string) $cells->item(2)?->textContent);
+            $place = self::normalizeText((string) $cells->item(3)?->textContent);
+            if ($dateTime === '' && $discipline === '') {
+                continue;
+            }
+            $items[] = [
+                'dateTime' => $dateTime,
+                'form' => $form,
+                'discipline' => $discipline,
+                'teacher' => $teacher,
+                'place' => $place,
+            ];
+        }
+
+        return ['title' => $title, 'updatedAt' => $updatedAt, 'items' => $items];
     }
 
     /**
@@ -222,12 +335,31 @@ final class ParseSchedule
         return trim($m->item(0)?->textContent ?? '');
     }
 
+    private static function firstTextOfRel(DOMXPath $xp, DOMElement $node, string $q): string
+    {
+        $m = $xp->query($q, $node);
+        if ($m === false || $m->length === 0) {
+            return '';
+        }
+        return self::normalizeText((string) $m->item(0)?->textContent);
+    }
+
+    private static function normalizeText(string $text): string
+    {
+        return trim(preg_replace('/\s+/', ' ', $text) ?? $text);
+    }
+
     private static function emptyPayload(string $path, string $view): array
     {
         return [
             'view' => $view,
             'sourcePath' => $path,
             'weeks' => [],
+            'session' => [
+                'title' => '',
+                'updatedAt' => '',
+                'items' => [],
+            ],
         ];
     }
 }
