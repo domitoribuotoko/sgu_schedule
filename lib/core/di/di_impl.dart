@@ -32,7 +32,6 @@ import 'package:sgu_schedule/domain/use_cases/schedule_reference/load_groups_use
 import 'package:sgu_schedule/domain/use_cases/schedule_reference/load_study_forms_use_case.dart';
 import 'package:sgu_schedule/presentation/schedule_selection_web/cubit/schedule_selection_cubit_factory.dart';
 import 'package:sgu_schedule/presentation/schedule_timetable_page/cubit/schedule_timetable_cubit_factory.dart';
-import 'package:sgu_schedule/presentation/schedule_webview_page/cubit/schedule_webview_cubit_factory.dart';
 
 class DIImplementation implements DIContainer {
   DIImplementation() : _getIt = GetIt.asNewInstance();
@@ -60,9 +59,6 @@ class DIImplementation implements DIContainer {
       () => ScheduleReferenceCacheRepositoryImpl(
         db: _getIt.get<ScheduleRefDatabase>(),
       ),
-    );
-    _getIt.registerLazySingleton<ScheduleWebviewCubitFactory>(
-      () => ScheduleWebviewCubitFactoryImpl(this),
     );
     _getIt.registerLazySingleton<ScheduleSelectionCubitFactory>(
       () => ScheduleSelectionCubitFactoryImpl(this),

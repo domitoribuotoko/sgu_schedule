@@ -20,18 +20,12 @@ abstract final class ScheduleApiConfig {
     if (env.isNotEmpty) {
       return env;
     }
-    if (kIsWeb) {
-      return _sameHostSguApi();
-    }
-    return 'http://188.253.17.93:9086';
+    return _sameHostSguApi();
   }
 
   static String _sameHostSguApi() {
     final u = Uri.base;
-    if ((u.isScheme('http') || u.isScheme('https')) && u.host.isNotEmpty) {
-      return '${u.origin}/sgu_api';
-    }
-    return 'http://188.253.17.93:9086';
+    return '${u.origin}/sgu_api';
   }
 
   /// Ответы API подменяются моками из [assets/mocks/schedule/] (Dio-интерцептор).

@@ -18,7 +18,6 @@ class AppRouter extends GoRouter {
               AppRoutes.splash,
               AppRoutes.select,
               AppRoutes.scheduleTimetable,
-              AppRoutes.schedule,
             ],
           ),
         ),

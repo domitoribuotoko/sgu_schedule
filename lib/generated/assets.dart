@@ -2,11 +2,13 @@
 class Assets {
   Assets._();
 
+  static const String assetsAsdasd = 'assets/asdasd.json';
   static const String assetsTestSchedule = 'assets/test_schedule.html';
   static const String assetsTestSession = 'assets/test_session.html';
   static const String assetsTestSite = 'assets/test_site.html';
   static const String scheduleFaculties = 'assets/mocks/schedule/faculties.json';
   static const String scheduleGroupsByScope = 'assets/mocks/schedule/groups_by_scope.json';
+  static const String scheduleScheduleContentByKey = 'assets/mocks/schedule/schedule_content_by_key.json';
   static const String scheduleStudyFormsByFaculty = 'assets/mocks/schedule/study_forms_by_faculty.json';
 
 }
