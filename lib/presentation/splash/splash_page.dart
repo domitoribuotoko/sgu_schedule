@@ -1,10 +1,8 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:sgu_schedule/core/di/di_interface.dart';
-import 'package:sgu_schedule/domain/use_cases/schedule_reference/fetch/fetch_faculties_params.dart';
-import 'package:sgu_schedule/presentation/_base/utils/app_router/route_paths.dart';
+import 'package:sgu_schedule/presentation/splash/cubit/splash_cubit.dart';
+import 'package:sgu_schedule/presentation/splash/cubit/splash_state.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -14,56 +12,22 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  String? _error;
+  SplashCubit _createCubit() {
+    final di = context.read<DiPresentationScope>();
+    return di.factories.splashCubitFactory.create(context);
+  }
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _load();
-    });
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => _createCubit(),
+      child: const _SplashBody(),
+    );
   }
+}
 
-  Future<void> _load() async {
-    setState(() {
-      _error = null;
-    });
-    final di = context.read<DiPresentationScope>();
-    if (kIsWeb) {
-      final snapR = await di.useCases.getScheduleSelectionSnapshot();
-      if (!mounted) {
-        return;
-      }
-      final snap = snapR.fold((_) => null, (s) => s);
-      if (snap != null && snap.path.isNotEmpty) {
-        if (mounted) {
-          context.go(RoutePaths.scheduleTimetable);
-        }
-        return;
-      }
-    }
-    final r = await di.useCases.fetchFaculties(
-      const FetchFacultiesParams(
-        forceUpdate: true,
-        alwaysFallback: true,
-      ),
-    );
-    if (!mounted) {
-      return;
-    }
-    r.fold(
-      (e) {
-        setState(() {
-          _error = e.message;
-        });
-      },
-      (_) {
-        if (mounted) {
-          context.go(RoutePaths.select);
-        }
-      },
-    );
-  }
+class _SplashBody extends StatelessWidget {
+  const _SplashBody();
 
   @override
   Widget build(BuildContext context) {
@@ -71,21 +35,29 @@ class _SplashPageState extends State<SplashPage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('Расписание СГУ'),
-              const SizedBox(height: 24),
-              if (_error == null) const CircularProgressIndicator(),
-              if (_error != null) ...[
-                Text(_error!, textAlign: TextAlign.center),
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: _load,
-                  child: const Text('Повторить'),
-                ),
-              ],
-            ],
+          child: BlocBuilder<SplashCubit, SplashState>(
+            builder: (context, state) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Расписание СГУ'),
+                  const SizedBox(height: 24),
+                  if (state.loading) const CircularProgressIndicator(),
+                  if (!state.loading && state.error != null) ...[
+                    Text(
+                      state.error!,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton(
+                      onPressed: () =>
+                          context.read<SplashCubit>().onRetryTap(),
+                      child: const Text('Повторить'),
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
         ),
       ),

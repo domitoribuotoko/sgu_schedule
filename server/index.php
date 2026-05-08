@@ -4,30 +4,17 @@ declare(strict_types=1);
 
 /**
  * JSON API, совпадающий с lib/data/network/sgu_schedule_api.dart.
- * Роутер: путь /v1/schedule/... (через .htaccess → этот файл).
+ * Роутер: путь /v1/schedule/... и POST /v1/telegram/... (через .htaccess → этот файл).
  */
 
+require __DIR__ . '/include/server_config.php';
+require __DIR__ . '/include/request_access_logger.php';
 require __DIR__ . '/include/http_cache.php';
 require __DIR__ . '/include/parse_reference.php';
 require __DIR__ . '/include/parse_schedule.php';
-
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-header('Access-Control-Allow-Origin: ' . ($origin !== '' ? $origin : '*'));
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Accept');
-header('Access-Control-Allow-Credentials: true');
-if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
+require __DIR__ . '/include/telegram_user_schedule.php';
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-if ($method !== 'GET') {
-    http_response_code(405);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['error' => 'Method not allowed'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
 
 $rawPath = (string) (parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '/');
 $base = rtrim(str_replace('\\', '/', dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '/'))), '/');
@@ -36,9 +23,43 @@ if ($base !== '' && $base !== '/' && str_starts_with($rawPath, $base)) {
     $path = (string) (substr($rawPath, strlen($base)) ?: '/');
 }
 
+RequestAccessLogger::logIncoming($method, $path);
+
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+header('Access-Control-Allow-Origin: ' . ($origin !== '' ? $origin : '*'));
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Accept');
+header('Access-Control-Allow-Credentials: true');
+if ($method === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 $jsonHeader = static function (): void {
     header('Content-Type: application/json; charset=utf-8');
 };
+
+if ($method === 'POST') {
+    if (preg_match('#/v1/telegram/schedule-selection/query/?$#', $path)) {
+        TelegramUserSchedule::handleQuery();
+        exit;
+    }
+    if (preg_match('#/v1/telegram/schedule-selection/save/?$#', $path)) {
+        TelegramUserSchedule::handleSave();
+        exit;
+    }
+    http_response_code(404);
+    $jsonHeader();
+    echo json_encode(['error' => 'Not found', 'path' => $path], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if ($method !== 'GET') {
+    http_response_code(405);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['error' => 'Method not allowed'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 if (preg_match('#/v1/schedule/faculties/?$#', $path)) {
     $html = ParseReference::indexHtml();

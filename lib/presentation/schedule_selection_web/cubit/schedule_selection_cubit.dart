@@ -2,8 +2,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sgu_schedule/domain/entities/schedule/faculty.dart';
 import 'package:sgu_schedule/domain/entities/schedule/schedule_group.dart';
 import 'package:sgu_schedule/domain/entities/schedule/study_form.dart';
+import 'package:sgu_schedule/domain/services/telegram_mini_app_gateway.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule/get_schedule_selection_snapshot_use_case.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule/save_schedule_selection_use_case.dart';
+import 'package:sgu_schedule/domain/use_cases/telegram/save_telegram_schedule_binding_use_case.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule_reference/fetch/fetch_faculties_params.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule_reference/fetch/fetch_faculties_use_case.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule_reference/fetch/fetch_groups_params.dart';
@@ -20,12 +22,16 @@ class ScheduleSelectionCubit extends Cubit<ScheduleSelectionState> {
     required FetchGroupsUseCaseInterface fetchGroups,
     required GetScheduleSelectionSnapshotUseCaseInterface getSelectionSnapshot,
     required SaveScheduleSelectionUseCaseInterface saveScheduleSelection,
+    required SaveTelegramScheduleBindingUseCaseInterface saveTelegramBinding,
+    required TelegramMiniAppGateway telegramGateway,
     required ScheduleSelectionNav nav,
   }) : _fetchFaculties = fetchFaculties,
        _fetchStudyForms = fetchStudyForms,
        _fetchGroups = fetchGroups,
        _getSelectionSnapshot = getSelectionSnapshot,
        _saveScheduleSelection = saveScheduleSelection,
+       _saveTelegramBinding = saveTelegramBinding,
+       _telegramGateway = telegramGateway,
        _nav = nav,
        super(const ScheduleSelectionState()) {
     loadFaculties();
@@ -36,6 +42,8 @@ class ScheduleSelectionCubit extends Cubit<ScheduleSelectionState> {
   final FetchGroupsUseCaseInterface _fetchGroups;
   final GetScheduleSelectionSnapshotUseCaseInterface _getSelectionSnapshot;
   final SaveScheduleSelectionUseCaseInterface _saveScheduleSelection;
+  final SaveTelegramScheduleBindingUseCaseInterface _saveTelegramBinding;
+  final TelegramMiniAppGateway _telegramGateway;
   final ScheduleSelectionNav _nav;
 
   /// Один раз после первого успешного ответа факультетов — подставить преф.
@@ -315,16 +323,40 @@ class ScheduleSelectionCubit extends Cubit<ScheduleSelectionState> {
         group: g,
       ),
     );
-    res.fold(
-      (e) {
+    await res.fold<Future<void>>(
+      (e) async {
         emit(
           state.copyWith(saving: false, error: e.message),
         );
       },
-      (_) {
+      (_) async {
         emit(state.copyWith(saving: false));
-        _nav.goToSchedule(g);
+        await _pushBindingToTelegramServerIfNeeded();
+        if (!isClosed) {
+          _nav.goToSchedule(g);
+        }
       },
+    );
+  }
+
+  Future<void> _pushBindingToTelegramServerIfNeeded() async {
+    final raw = _telegramGateway.readLaunchContext().rawInitData?.trim() ?? '';
+    if (raw.isEmpty) {
+      return;
+    }
+    final snapR = await _getSelectionSnapshot.call();
+    if (isClosed) {
+      return;
+    }
+    final snap = snapR.fold((_) => null, (s) => s);
+    if (snap == null || snap.isEmpty) {
+      return;
+    }
+    _saveTelegramBinding.call(
+      SaveTelegramScheduleBindingParams(
+        initDataRaw: raw,
+        snapshot: snap,
+      ),
     );
   }
 }

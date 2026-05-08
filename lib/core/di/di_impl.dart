@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sgu_schedule/core/di/di_interface.dart';
 import 'package:sgu_schedule/data/drift/schedule_ref_database.dart';
+import 'package:sgu_schedule/data/telegram/telegram_mini_app_gateway_impl.dart';
 import 'package:sgu_schedule/data/local/schedule_path_repository_impl.dart';
 import 'package:sgu_schedule/data/network/schedule_dio.dart';
 import 'package:sgu_schedule/data/network/sgu_schedule_api.dart';
@@ -11,12 +12,15 @@ import 'package:sgu_schedule/data/repositories/schedule_reference_cache_reposito
 import 'package:sgu_schedule/data/repositories/schedule_reference_repository_impl.dart';
 import 'package:sgu_schedule/data/repositories/schedule_timetable_cache_repository_impl.dart';
 import 'package:sgu_schedule/data/repositories/schedule_timetable_repository_impl.dart';
+import 'package:sgu_schedule/data/repositories/telegram_schedule_binding_repository_impl.dart';
 import 'package:sgu_schedule/domain/_base/di_getters.dart';
 import 'package:sgu_schedule/domain/repositories/schedule_path_repository.dart';
 import 'package:sgu_schedule/domain/repositories/schedule_reference_cache_repository.dart';
 import 'package:sgu_schedule/domain/repositories/schedule_reference_repository.dart';
 import 'package:sgu_schedule/domain/repositories/schedule_timetable_cache_repository.dart';
 import 'package:sgu_schedule/domain/repositories/schedule_timetable_repository.dart';
+import 'package:sgu_schedule/domain/repositories/telegram_schedule_binding_repository.dart';
+import 'package:sgu_schedule/domain/services/telegram_mini_app_gateway.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule_reference/cache/get_cached_faculties_use_case.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule_reference/cache/get_cached_groups_use_case.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule_reference/cache/get_cached_study_forms_use_case.dart';
@@ -30,8 +34,11 @@ import 'package:sgu_schedule/domain/use_cases/schedule_reference/fetch/fetch_stu
 import 'package:sgu_schedule/domain/use_cases/schedule_reference/load_faculties_use_case.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule_reference/load_groups_use_case.dart';
 import 'package:sgu_schedule/domain/use_cases/schedule_reference/load_study_forms_use_case.dart';
+import 'package:sgu_schedule/domain/use_cases/telegram/get_telegram_schedule_binding_use_case.dart';
+import 'package:sgu_schedule/domain/use_cases/telegram/save_telegram_schedule_binding_use_case.dart';
 import 'package:sgu_schedule/presentation/schedule_selection_web/cubit/schedule_selection_cubit_factory.dart';
 import 'package:sgu_schedule/presentation/schedule_timetable_page/cubit/schedule_timetable_cubit_factory.dart';
+import 'package:sgu_schedule/presentation/splash/cubit/splash_cubit_factory.dart';
 
 class DIImplementation implements DIContainer {
   DIImplementation() : _getIt = GetIt.asNewInstance();
@@ -42,7 +49,7 @@ class DIImplementation implements DIContainer {
   Factories get factories => Factories(this);
 
   @override
-  Dependencies get dependencies => Dependencies();
+  Dependencies get dependencies => Dependencies(this);
 
   @override
   UseCases get useCases => UseCases(this);
@@ -52,6 +59,11 @@ class DIImplementation implements DIContainer {
 
   @override
   FutureOr<void> init() async {
+    _getIt.registerLazySingleton<TelegramMiniAppGateway>(
+      TelegramMiniAppGatewayImpl.new,
+    );
+    _getIt.get<TelegramMiniAppGateway>().notifyWebAppReady();
+
     final repo = await SchedulePathRepositoryImpl.create();
     _getIt.registerSingleton<SchedulePathRepository>(repo);
     _getIt.registerSingleton<ScheduleRefDatabase>(ScheduleRefDatabase());
@@ -66,10 +78,28 @@ class DIImplementation implements DIContainer {
     _getIt.registerLazySingleton<ScheduleTimetableCubitFactory>(
       () => ScheduleTimetableCubitFactoryImpl(this),
     );
+    _getIt.registerLazySingleton<SplashCubitFactory>(
+      () => SplashCubitFactoryImpl(this),
+    );
 
     _getIt.registerLazySingleton<Dio>(createScheduleDio);
     _getIt.registerLazySingleton<SguScheduleApi>(
       () => SguScheduleApi(_getIt.get<Dio>()),
+    );
+    _getIt.registerLazySingleton<TelegramScheduleBindingRepository>(
+      () => TelegramScheduleBindingRepositoryImpl(
+        api: _getIt.get<SguScheduleApi>(),
+      ),
+    );
+    _getIt.registerLazySingleton<GetTelegramScheduleBindingUseCaseInterface>(
+      () => GetTelegramScheduleBindingUseCase(
+        repository: _getIt.get<TelegramScheduleBindingRepository>(),
+      ),
+    );
+    _getIt.registerLazySingleton<SaveTelegramScheduleBindingUseCaseInterface>(
+      () => SaveTelegramScheduleBindingUseCase(
+        repository: _getIt.get<TelegramScheduleBindingRepository>(),
+      ),
     );
     _getIt.registerLazySingleton<ScheduleReferenceRepository>(
       () => ScheduleReferenceRepositoryImpl(api: _getIt.get<SguScheduleApi>()),

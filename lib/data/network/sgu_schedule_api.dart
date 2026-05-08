@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:sgu_schedule/data/dto/schedule_content/schedule_content_dtos.dart';
 import 'package:sgu_schedule/data/dto/schedule_reference/schedule_reference_dtos.dart';
+import 'package:sgu_schedule/data/dto/telegram/telegram_schedule_binding_dtos.dart';
 
 part 'sgu_schedule_api.g.dart';
 
@@ -29,5 +30,17 @@ abstract class SguScheduleApi {
   Future<ScheduleContentResponseDto> getScheduleContent(
     @Query('path') String path,
     @Query('view') String view,
+  );
+
+  @POST('/v1/telegram/schedule-selection/query')
+  Future<TelegramScheduleSelectionQueryResponseDto>
+  queryTelegramScheduleSelection(
+    @Body() TelegramScheduleSelectionQueryRequestDto body,
+  );
+
+  @POST('/v1/telegram/schedule-selection/save')
+  Future<TelegramScheduleSelectionSaveResponseDto>
+  saveTelegramScheduleSelection(
+    @Body() TelegramScheduleSelectionSaveRequestDto body,
   );
 }

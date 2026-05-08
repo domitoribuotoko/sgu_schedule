@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# PHP: секреты бота (копия из config.local.example.php)
+server/include/config.local.php

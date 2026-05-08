@@ -31,24 +31,96 @@
 
   <title>sgu_schedule</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Must load before Flutter so Telegram.WebApp is initialized from the launch URL. -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
     (function () {
+      var STORAGE_KEY = 'sgu_tg_launch_query';
+
+      function parseSegment(segment) {
+        if (!segment || segment.length <= 1) {
+          return {};
+        }
+        var q = segment.charAt(0) === '?' || segment.charAt(0) === '#'
+          ? segment.slice(1)
+          : segment;
+        if (!q) {
+          return {};
+        }
+        var out = {};
+        q.split('&').forEach(function (part) {
+          if (!part) {
+            return;
+          }
+          var eq = part.indexOf('=');
+          var key = eq >= 0 ? decodeURIComponent(part.slice(0, eq)) : decodeURIComponent(part);
+          var rawVal = eq >= 0 ? part.slice(eq + 1) : '';
+          var val = eq >= 0 ? decodeURIComponent(rawVal.replace(/\+/g, ' ')) : '';
+          if (key.indexOf('tgWebApp') === 0) {
+            out[key] = val;
+          }
+        });
+        return out;
+      }
+
+      function mergeParams(a, b) {
+        var o = {};
+        var k;
+        for (k in a) {
+          if (Object.prototype.hasOwnProperty.call(a, k)) {
+            o[k] = a[k];
+          }
+        }
+        for (k in b) {
+          if (Object.prototype.hasOwnProperty.call(b, k)) {
+            o[k] = b[k];
+          }
+        }
+        return o;
+      }
+
+      function appBasePath(loc) {
+        var el = document.querySelector('base');
+        if (!el) {
+          return '';
+        }
+        var href = el.getAttribute('href') || '/';
+        try {
+          var u = new URL(href, loc.href);
+          var p = u.pathname || '';
+          if (p === '/' || p === '') {
+            return '';
+          }
+          return p.replace(/\/$/, '');
+        } catch (e) {
+          return '';
+        }
+      }
+
       try {
-        var l = window.location;
-        if (!l.hash || l.hash.indexOf("tgWebAppData=") < 0) {
+        var loc = window.location;
+        var tgParams = mergeParams(parseSegment(loc.search), parseSegment(loc.hash || ''));
+        var hasTgKeys = Object.keys(tgParams).length > 0;
+
+        if (hasTgKeys) {
+          try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(tgParams));
+          } catch (e) {}
+        }
+
+        var needClean =
+          hasTgKeys ||
+          loc.search.indexOf('tgWebApp') >= 0 ||
+          (loc.hash && loc.hash.indexOf('tgWebApp') >= 0);
+
+        if (!needClean) {
           return;
         }
-        var inner = l.hash.charAt(0) === "#" ? l.hash.slice(1) : l.hash;
-        if (inner.indexOf("tgWebAppData=") < 0 || inner.charAt(0) === "/") {
-          return;
-        }
-        var path = l.pathname && l.pathname.length ? l.pathname : "/";
-        var joined = l.search
-          ? l.search + "&" + inner
-          : "?" + inner;
-        l.replace(
-          l.protocol + "//" + l.host + path + joined
-        );
+
+        var bp = appBasePath(loc);
+        var splashPath = bp ? bp + '/splash' : '/splash';
+        history.replaceState(null, '', splashPath);
       } catch (e) {}
     })();
   </script>
