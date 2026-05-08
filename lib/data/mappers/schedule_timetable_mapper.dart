@@ -18,8 +18,12 @@ abstract final class ScheduleTimetableMapper {
                           .map(
                             (s) => ScheduleSlot(
                               time: s.time,
+                              timeStart: s.timeStart,
+                              timeEnd: s.timeEnd,
                               title: s.title,
                               room: s.room,
+                              teacher: s.teacher,
+                              subgroup: s.subgroup,
                             ),
                           )
                           .toList(),
@@ -63,8 +67,12 @@ abstract final class ScheduleTimetableMapper {
                           .map(
                             (s) => {
                               'time': s.time,
+                              'timeStart': s.timeStart,
+                              'timeEnd': s.timeEnd,
                               'title': s.title,
                               'room': s.room,
+                              'teacher': s.teacher,
+                              'subgroup': s.subgroup,
                             },
                           )
                           .toList(),

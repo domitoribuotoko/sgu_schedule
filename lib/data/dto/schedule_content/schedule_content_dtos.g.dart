@@ -9,8 +9,12 @@ part of 'schedule_content_dtos.dart';
 ScheduleSlotDto _$ScheduleSlotDtoFromJson(Map<String, dynamic> json) =>
     ScheduleSlotDto(
       time: json['time'] as String? ?? '',
+      timeStart: json['timeStart'] as String? ?? '',
+      timeEnd: json['timeEnd'] as String? ?? '',
       title: json['title'] as String? ?? '',
       room: json['room'] as String? ?? '',
+      teacher: json['teacher'] as String? ?? '',
+      subgroup: json['subgroup'] as String? ?? '',
     );
 
 ScheduleDayDto _$ScheduleDayDtoFromJson(Map<String, dynamic> json) =>

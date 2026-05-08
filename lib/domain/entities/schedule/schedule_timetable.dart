@@ -3,16 +3,24 @@ import 'package:equatable/equatable.dart';
 class ScheduleSlot extends Equatable {
   const ScheduleSlot({
     this.time = '',
+    this.timeStart = '',
+    this.timeEnd = '',
     this.title = '',
     this.room = '',
+    this.teacher = '',
+    this.subgroup = '',
   });
 
   final String time;
+  final String timeStart;
+  final String timeEnd;
   final String title;
   final String room;
+  final String teacher;
+  final String subgroup;
 
   @override
-  List<Object?> get props => [time, title, room];
+  List<Object?> get props => [time, timeStart, timeEnd, title, room, teacher, subgroup];
 }
 
 class ScheduleDay extends Equatable {

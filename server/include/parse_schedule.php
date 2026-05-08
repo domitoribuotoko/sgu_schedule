@@ -11,7 +11,15 @@ final class ParseSchedule
      * @return array{
      *   view: string,
      *   sourcePath: string,
-     *   weeks: list<array{title: string, days: list<array{dateLabel: string, slots: list<array{time: string, title: string, room: string}>}>}>,
+     *   weeks: list<array{title: string, days: list<array{dateLabel: string, slots: list<array{
+     *     time: string,
+     *     timeStart: string,
+     *     timeEnd: string,
+     *     title: string,
+     *     room: string,
+     *     teacher: string,
+     *     subgroup: string
+     *   }>}>}>,
      *   session: array{
      *     title: string,
      *     updatedAt: string,
@@ -40,14 +48,7 @@ final class ParseSchedule
         $xp = new DOMXPath($doc);
         $sessionData = self::parseSession($xp);
 
-        $weekTitle = 'Расписание';
-        $h = $xp->query("//h1[contains(@class,'title')] | //h1 | //h2[1]");
-        if ($h !== false && $h->length > 0) {
-            $t = trim($h->item(0)?->textContent ?? '');
-            if ($t !== '') {
-                $weekTitle = $t;
-            }
-        }
+        $weekTitle = self::extractWeekTitle($xp);
 
         $table = $xp->query("//table[@id='schedule' or contains(concat(' ', normalize-space(@class), ' '), ' schedule-table__wrapper ')]");
         if ($table === false || $table->length === 0) {
@@ -71,7 +72,7 @@ final class ParseSchedule
         }
 
         $n = count($dayLabels);
-        /** @var list<list<array{time: string, title: string, room: string}>> $perDay */
+        /** @var list<list<array{time: string, timeStart: string, timeEnd: string, title: string, room: string, teacher: string, subgroup: string}>> $perDay */
         $perDay = array_fill(0, $n, []);
 
         $rows = $xp->query('.//tbody/tr', $tableEl);
@@ -90,7 +91,7 @@ final class ParseSchedule
             if ($tds === false || $tds->length === 0) {
                 continue;
             }
-            $time = self::timeFromRowTh($xp, $tr);
+            $timeParts = self::timeRangeFromRowTh($xp, $tr);
             $tdCount = $tds->length;
             $maxJ = min($n, $tdCount);
             for ($j = 0; $j < $maxJ; $j++) {
@@ -122,10 +123,18 @@ final class ParseSchedule
                     }
                     $room = self::textOfRel($node, ".//*[contains(@class,'schedule-table__lesson-room')]");
                     $room = trim(preg_replace('/\s+/', ' ', $room) ?? $room);
+                    $teacher = self::textOfRel($node, ".//*[contains(@class,'schedule-table__lesson-teacher')]");
+                    $teacher = trim(preg_replace('/\s+/', ' ', $teacher) ?? $teacher);
+                    $subgroup = self::textOfRel($node, ".//*[contains(@class,'schedule-table__lesson-uncertain')]");
+                    $subgroup = trim(preg_replace('/\s+/', ' ', $subgroup) ?? $subgroup);
                     $perDay[$j][] = [
-                        'time' => $time,
+                        'time' => $timeParts['raw'],
+                        'timeStart' => $timeParts['start'],
+                        'timeEnd' => $timeParts['end'],
                         'title' => trim(preg_replace('/\s+/', ' ', $title) ?? $title),
                         'room' => $room,
+                        'teacher' => $teacher,
+                        'subgroup' => $subgroup,
                     ];
                 }
             }
@@ -297,28 +306,70 @@ final class ParseSchedule
         return $labels;
     }
 
-    private static function timeFromRowTh(DOMXPath $xp, DOMElement $tr): string
+    /**
+     * @return array{raw: string, start: string, end: string}
+     */
+    private static function timeRangeFromRowTh(DOMXPath $xp, DOMElement $tr): array
     {
         $thFirst = $xp->query('./th[1]', $tr);
         if ($thFirst === false || $thFirst->length === 0) {
-            return '';
+            return ['raw' => '', 'start' => '', 'end' => ''];
         }
         $th = $thFirst->item(0);
         if (!($th instanceof DOMElement)) {
-            return '';
+            return ['raw' => '', 'start' => '', 'end' => ''];
         }
         $t = self::textOfRel($th, ".//*[contains(concat(' ', normalize-space(@class), ' '), ' schedule-table__header ')]");
         if ($t === '') {
             $t = trim(preg_replace('/\s+/', ' ', (string) $th->textContent) ?? '');
         }
-
-        return $t;
+        $parts = preg_split('/\s+/', $t) ?: [];
+        $start = $parts[0] ?? '';
+        $end = $parts[1] ?? '';
+        $raw = trim(implode(' - ', array_values(array_filter([$start, $end], static fn (string $x): bool => $x !== ''))));
+        if ($raw === '') {
+            $raw = $t;
+        }
+        return ['raw' => $raw, 'start' => $start, 'end' => $end];
     }
 
     private static function nodeHasLectureType(DOMElement $lesson): bool
     {
         $html = $lesson->ownerDocument?->saveHTML($lesson) ?? '';
         return str_contains($html, 'lesson-prop__lecture') || str_contains($html, 'ЛЕКЦ');
+    }
+
+    private static function extractWeekTitle(DOMXPath $xp): string
+    {
+        // Prefer schedule section title and avoid generic hidden page headings
+        // like "Header menu" that are unrelated to timetable content.
+        $candidates = [
+            "//div[contains(concat(' ', normalize-space(@class), ' '), ' schedule__wrap-lection ')]//*[contains(concat(' ', normalize-space(@class), ' '), ' title__wrap_info ')]",
+            "//section[contains(concat(' ', normalize-space(@class), ' '), ' title__page ')]//*[contains(concat(' ', normalize-space(@class), ' '), ' title__wrap_info ')]",
+            "//h1[contains(@class,'title')]",
+            "//h1",
+            "//h2[not(contains(concat(' ', normalize-space(@class), ' '), ' visually-hidden '))]",
+        ];
+        foreach ($candidates as $q) {
+            $nodes = $xp->query($q);
+            if ($nodes === false || $nodes->length === 0) {
+                continue;
+            }
+            for ($i = 0; $i < $nodes->length; $i++) {
+                $t = self::normalizeText((string) $nodes->item($i)?->textContent);
+                if ($t === '' || self::isGarbageTitle($t)) {
+                    continue;
+                }
+                return $t;
+            }
+        }
+        return 'Расписание';
+    }
+
+    private static function isGarbageTitle(string $title): bool
+    {
+        $t = mb_strtolower(trim($title));
+        return $t === 'header menu' || $t === 'menu';
     }
 
     private static function textOfRel(DOMElement $node, string $q): string

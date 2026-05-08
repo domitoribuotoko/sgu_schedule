@@ -7,16 +7,24 @@ part 'schedule_content_dtos.g.dart';
 class ScheduleSlotDto {
   const ScheduleSlotDto({
     this.time = '',
+    this.timeStart = '',
+    this.timeEnd = '',
     this.title = '',
     this.room = '',
+    this.teacher = '',
+    this.subgroup = '',
   });
 
   factory ScheduleSlotDto.fromJson(Map<String, dynamic> json) =>
       _$ScheduleSlotDtoFromJson(json);
 
   final String time;
+  final String timeStart;
+  final String timeEnd;
   final String title;
   final String room;
+  final String teacher;
+  final String subgroup;
 }
 
 /// Один день в блоке «неделя».
